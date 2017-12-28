@@ -533,14 +533,11 @@ RCT_EXPORT_METHOD(makeRequest:(NSString *)providerName
         } else {
             NSInteger statusCode = response.statusCode;
             NSData *rawData = response.data;
-<<<<<<< HEAD
-=======
 
             // if account.credential has changed through use of a refresh token, save the updated token
             if ([existingAccount credential] != existingCredential) {
                 [[manager accountStore] saveAccount:existingAccount];
             }
->>>>>>> tqc/reauth
 
             NSError *err;
             NSArray *data;
