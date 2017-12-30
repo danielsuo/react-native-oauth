@@ -508,6 +508,17 @@ RCT_EXPORT_METHOD(makeRequest:(NSString *)providerName
         }
     }
 
+    NSDictionary *json = [opts objectForKey:@"json"];
+    if (json != nil) {
+        NSMutableArray *items = [[NSMutableArray alloc] init];
+        for (NSString *key in json) {
+            DCTAuthContentItem *item = [[DCTAuthContentItem alloc] initWithName:key value:[json valueForKey:key]];
+            [items addObject:item];
+        }
+        DCTAuthContent *content = [[DCTAuthContent alloc] initWithEncoding:NSUTF8StringEncoding type:DCTAuthContentTypeJSON items:items];
+        request.content = content;
+    }
+
     request.account = existingAccount;
 
     // If there are headers
