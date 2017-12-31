@@ -446,8 +446,8 @@ RCT_EXPORT_METHOD(makeRequest:(NSString *)providerName
     OAuthManager *manager = [OAuthManager sharedManager];
     NSMutableDictionary *cfg = [[manager getConfigForProvider:providerName] mutableCopy];
 
-    DCTAuthAccount *existingAccount = [manager accountForProvider:providerName];
-    if (existingAccount == nil) {
+    DCTAuthAccount *storedAccount = [manager accountForProvider:providerName];
+    if (storedAccount == nil) {
         NSDictionary *errResp = @{
                                   @"status": @"error",
                                   @"msg": [NSString stringWithFormat:@"No account found for %@", providerName]
@@ -458,7 +458,21 @@ RCT_EXPORT_METHOD(makeRequest:(NSString *)providerName
 
     NSDictionary *creds = [self credentialForAccount:providerName cfg:cfg];
 
-    id<DCTAuthAccountCredential> existingCredential = [existingAccount credential];
+    id<DCTAuthAccountCredential> existingCredential = [storedAccount credential];
+
+    NSString *scopeStr = [cfg valueForKey:@"scopes"];
+    // Lol, really? (Match OAuth2Client.m)
+    NSString *sep = @", ";
+    NSCharacterSet *set = [NSCharacterSet characterSetWithCharactersInString:sep];
+
+    NSArray *scopes = [scopeStr componentsSeparatedByCharactersInSet:set];
+    DCTAuthAccount *existingAccount = [[DCTOAuth2Account alloc] initWithType:providerName
+                                                                authorizeURL:[cfg objectForKey:@"authorize_url"]
+                                                              accessTokenURL:[cfg objectForKey:@"access_token_url"]
+                                                                    clientID:[cfg objectForKey:@"client_id"]
+                                                                clientSecret:[cfg objectForKey:@"client_secret"]
+                                                                      scopes:scopes];
+    existingAccount.credential = existingCredential;
 
     // If we have the http in the string, use it as the URL, otherwise create one
     // with the configuration
@@ -547,7 +561,7 @@ RCT_EXPORT_METHOD(makeRequest:(NSString *)providerName
 
             // if account.credential has changed through use of a refresh token, save the updated token
             if ([existingAccount credential] != existingCredential) {
-                [[manager accountStore] saveAccount:existingAccount];
+                    [[manager accountStore] saveAccount:existingAccount];
             }
 
             NSError *err;
