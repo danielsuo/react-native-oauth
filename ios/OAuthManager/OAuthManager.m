@@ -393,7 +393,28 @@ RCT_EXPORT_METHOD(reauthenticate:(NSString *) providerName
 
     NSString *newToken = [opts valueForKey:@"accessToken"];
 
-    DCTAuthAccount *existingAccount = [manager accountForProvider:providerName];
+    DCTAuthAccount *storedAccount = [manager accountForProvider:providerName];
+    NSDictionary *creds = [self credentialForAccount:providerName cfg:cfg];
+    id<DCTAuthAccountCredential> existingCredential = [storedAccount credential];
+
+    NSString *scopeStr = [cfg valueForKey:@"scopes"];
+    // Lol, really? (Match OAuth2Client.m)
+    NSString *sep = @", ";
+    NSCharacterSet *set = [NSCharacterSet characterSetWithCharactersInString:sep];
+
+    NSArray *scopes = [scopeStr componentsSeparatedByCharactersInSet:set];
+    DCTAuthAccount *existingAccount = [[DCTOAuth2Account alloc] initWithType:providerName
+                                                                authorizeURL:[cfg objectForKey:@"authorize_url"]
+                                                              accessTokenURL:[cfg objectForKey:@"access_token_url"]
+                                                                    clientID:[cfg objectForKey:@"client_id"]
+                                                                clientSecret:[cfg objectForKey:@"client_secret"]
+                                                                      scopes:scopes];
+    existingAccount.credential = existingCredential;
+
+    if (newToken == nil) {
+        newToken = [creds valueForKey:@"access_token"];
+    }
+
     if (existingAccount == nil) {
         NSDictionary *resp = @{
                                @"status": @"error",
