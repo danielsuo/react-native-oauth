@@ -550,6 +550,12 @@ RCT_EXPORT_METHOD(makeRequest:(NSString *)providerName
         request.content = content;
     }
 
+    NSString *raw = [opts valueForKey:@"raw"];
+    if (raw != nil) {
+        DCTAuthContent *content = [[DCTAuthContent alloc] initWithString:raw contentType:@"message/rfc822"];
+        request.content = content;
+    }
+
     request.account = existingAccount;
 
     // If there are headers
