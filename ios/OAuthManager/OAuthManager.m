@@ -123,7 +123,8 @@ RCT_EXPORT_MODULE(OAuthManager);
 
     if ([manager.callbackUrls indexOfObject:strUrl] != NSNotFound) {
         if(safariViewController != nil) {
-            [safariViewController dismissViewControllerAnimated:YES completion:nil];
+            UIViewController *viewController = application.keyWindow.rootViewController;
+            [viewController dismissViewControllerAnimated:YES completion:nil];
         }
         return [DCTAuth handleURL:url];
     }
