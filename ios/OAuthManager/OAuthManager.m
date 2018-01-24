@@ -122,14 +122,15 @@ RCT_EXPORT_MODULE(OAuthManager);
     NSString *strUrl = [manager stringHost:url];
 
     if ([manager.callbackUrls indexOfObject:strUrl] != NSNotFound) {
+        BOOL result = [DCTAuth handleURL:url];
         if(safariViewController != nil) {
             UIViewController *viewController = application.keyWindow.rootViewController;
             [viewController dismissViewControllerAnimated:YES completion:nil];
         }
-        return [DCTAuth handleURL:url];
+        return result;
     }
 
-    // [manager clearPending];
+//     [manager clearPending];
 
     return [RCTLinkingManager application:application openURL:url
                         sourceApplication:sourceApplication annotation:annotation];
